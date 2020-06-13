@@ -11,11 +11,11 @@ def fixtures(api_key, date):
     footie = Football(api_key)
     response = footie.get_fixtures_leaguedate(date).json()
     fixtures_response = response['api']['fixtures']
-    fixtures_ids = []
+    fixtures_data = []
     for i in fixtures_response:
-        fixture = i['fixture_id']
-        fixtures_ids.append(fixture)
-    return fixtures_ids
+        fixture = {'fixture_id': i['fixture_id'], 'event_timestamp': i['event_timestamp']}
+        fixtures_data.append(fixture)
+    return fixtures_data
 
 
 @app.task(name='tasks.odds')
