@@ -1,3 +1,7 @@
+# football_apis.py
+'''
+I need a better API for real time match data
+'''
 import requests
 
 
@@ -5,9 +9,11 @@ class Football:
     API_HOST = 'https://api-football-v1.p.rapidapi.com/v2'
     BOOKMAKER_ID = 3  # Betfair. Pinnacle is 4
     LEAGUE_ID = 754  # German bundesliga
+    API_KEY = '9a3a7d1d81msh7c32f567f3666e0p12ad03jsndd531285bac1'
 
-    def __init__(self, api_key):
-        self.API_KEY = api_key
+    def __init__(self, api_key=None):
+        pass
+ #       self.API_KEY = api_key
 
     def _headers(self):
         headers = {
