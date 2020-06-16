@@ -13,7 +13,7 @@ class ResponseParser:
         self.TG_CHAT_ID = 173075290
         self.API_HOST = 'https://api.telegram.org'
 
-    def parse_notification(self, fixture, celery_response):
+    def parse_notification(self, celery_response, fixture):
         # Parse response to form notification message
         bet_old = celery_response[0]
         bet_new = celery_response[1][1]
@@ -21,11 +21,12 @@ class ResponseParser:
         teams = list(news)
         notification_text = f'__*{teams[0]}* vs *{teams[1]}*__\n'
         notification_text += f'Odds 24h before:\n'
-        for i in bet_old[::-1]:
-            notification_text += f'`{list(i.values())[0]}: {list(i.values())[1]:4}`\n'
+        print(bet_old)
+        for key in bet_old:
+            notification_text += f'`{key}: {bet_old[key]}`\n'
         notification_text += '\nOdds after team news:\n'
-        for i in bet_new[::-1]:
-            notification_text += f'`{list(i.values())[0]}: {list(i.values())[1]:4}`\n'
+        for key in bet_new:
+            notification_text += f'`{key}: {bet_new[key]}`\n'
         notification_text = notification_text.replace('.', '\\.')
         # Format telegram bot API request and send the notification message
         #   Includes a button to press for additional team news information
@@ -49,7 +50,7 @@ class ResponseParser:
         response = requests.get(uri, params=params)
         return response
 
-    def parse_news(self, fixture, celery_response):
+    def parse_news(self, celery_response, fixture):
         # Parse response to form news message
         news = celery_response[1][0]
         news_notification = ''

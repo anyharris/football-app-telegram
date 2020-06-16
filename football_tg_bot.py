@@ -10,12 +10,6 @@ TG_BOT_TOKEN = '1241564289:AAGHB2cruHbI9QzOGzNft6UaDy3PkU34y_k'
 fpsql = FootballPostgresql()
 
 
-def command_handler_news(update, context):
-    text = get_news(update.callback_query.data)
-    chat_id = update.callback_query.message.chat_id
-    context.bot.send_message(chat_id, text='Testing')
-
-
 def news_callback_query_handler(update, context):
     cqd = update.callback_query.data
     news = fpsql.read_news(cqd)
@@ -29,7 +23,6 @@ def news_callback_query_handler(update, context):
         'parse_mode': 'MarkdownV2',
     }
     requests.get(uri, params=params)
-    #bot.send_message(chat_id, text=news, parse_mode='MarkdownV2')
 
 
 def main():
