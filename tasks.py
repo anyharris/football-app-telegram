@@ -1,9 +1,16 @@
 # tasks.py
 '''
-Test has been debugged. Need to put this on the server and set up a scheduler.
+Ready for production. Just need to put it on the server
 
 to start worker:
 celery -A tasks worker -B -l info
+
+to show celery queue:
+sudo rabbitmqctl list_queues
+
+to purge celery queue:
+celery -A tasks purge
+
 '''
 
 import time
@@ -38,18 +45,17 @@ logger = get_task_logger(__name__)
 app.conf.beat_schedule = {
     'check-daily-matches': {
         'task': 'tasks.fixtures',
-        'schedule': crontab(minute='08', hour='3', day_of_week='*'),
+        'schedule': crontab(minute='00', hour='4', day_of_week='*'),
     }
 }
 
+
 @app.task(name='tasks.fixtures')
 def fixtures():
+    print(f'starting to get fixtures and execute them')
     date_today = str(date.today())
-    print(date_today)
-    print(type(date_today))
     footie = Football()
     response = footie.get_fixtures_leaguedate(date_today).json()
-    print(response)
     fixtures_response = response['api']['fixtures']
     for i in fixtures_response:
         fixture = {
@@ -57,9 +63,8 @@ def fixtures():
             'event_timestamp': i['event_timestamp'],
             'home_team': i['homeTeam']['team_name']
         }
-        for j in CHAT_IDS:
-            print(f'ordering execution of fixture {fixture} for chat ID {j}')
-            execute(fixture, j)
+        print(f'ordering execution of fixture {fixture}')
+        execute(fixture)
 
 
 @app.task(name='tasks.odds')
@@ -110,17 +115,19 @@ def news(fixture):
 
 
 @app.task(name='tasks.messenger')
-def messenger(data, fixture_id, chat_id):
-    print(f'starting to parse messages for fixture id: {fixture_id} and chat id {chat_id}')
+def messenger(data, fixture_id):
+    print(f'starting to parse messages for fixture id: {fixture_id}')
     rparser = ResponseParser()
-    rparser.parse_notification(data, fixture_id, chat_id)
+    for i in CHAT_IDS:
+        rparser.parse_notification(data, fixture_id, i)
+        print(f'parsed notification messages for fixture id: {fixture_id} and chat id {i}')
     rparser.parse_news(data, fixture_id)
-    print(f'parsed messages for fixture id: {fixture_id} and chat id {chat_id}')
+    print(f'parsed news message for fixture id: {fixture_id}')
 
 
 @app.task(name='tasks.execute')
-def execute(fixture, chat_id):
-    print(f'starting execution of fixture {fixture} for chat id {chat_id}')
+def execute(fixture):
+    print(f'starting execution of fixture {fixture}')
     fixture_id = fixture['fixture_id']
     event_timestamp = fixture['event_timestamp']
     now = int(time.time())
@@ -128,5 +135,5 @@ def execute(fixture, chat_id):
         news.s(fixture).set(countdown=(event_timestamp - now - (60 * 59))),
         odds.s(fixture).set(countdown=(60 * 2))
     )
-    chord([odds.s(prev_result=False, fixture=fixture).set(countdown=(event_timestamp - now - (60 * 90))), job])(messenger.s(fixture_id, chat_id))
-    print(f'executed fixture {fixture} for chat id {chat_id}')
+    chord([odds.s(prev_result=False, fixture=fixture).set(countdown=(event_timestamp - now - (60 * 90))), job])(messenger.s(fixture_id))
+    print(f'executed fixture {fixture}')
