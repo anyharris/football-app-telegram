@@ -23,7 +23,7 @@ except Exception as err:
     sys.exit()
 #   Creating postgres table if there isn't one already
 try:
-    cursorObj.execute('CREATE TABLE news_messages (id serial PRIMARY KEY, time_stamp text, message_id text, message_text text)')
+    cursorObj.execute('CREATE TABLE testing (id serial PRIMARY KEY, time_stamp text, message_id text, message_text text)')
     con.commit()
     logging.info('created the table')
 except Exception as err:
