@@ -111,6 +111,7 @@ def news(fixture):
             fixture_news = response['api']['lineUps']
             print(f'got the news for fixture {fixture}')
             return fixture_news
+        print('waiting 5 mins for new news')
         time.sleep(60 * 5)
 
 
