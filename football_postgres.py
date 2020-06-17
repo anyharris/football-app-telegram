@@ -1,17 +1,20 @@
 # football_postgres.py
 '''
-This part is done
+Ready for production
 '''
 import psycopg2
 import datetime
+from dotenv import load_dotenv
+import os
 
 
 class FootballPostgresql():
     DATABASE = 'football_bot'
 
     def __init__(self):
-        self.con = psycopg2.connect(database=self.DATABASE, host='localhost', user='postgres',
-                                    password='NjURWXzJgVs3fEAR')
+        load_dotenv()
+        self.con = psycopg2.connect(database=self.DATABASE, host=os.getenv('POSTGRES_HOST'),
+                                    user=os.getenv('POSTGRES_USER'), password=os.getenv('POSTGRES_PASS'))
 
     def write_news(self, message_id, news_message):
         time_stamp = datetime.datetime.now()

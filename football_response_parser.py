@@ -1,27 +1,29 @@
 # football_response_parser.py
 '''
-This part is done
+Ready for production
 '''
 import requests
 import json
 from football_postgres import FootballPostgresql
+from dotenv import load_dotenv
+import os
 
 
 class ResponseParser:
-    def __init__(self):
-        self.TG_BOT_TOKEN = '1241564289:AAGHB2cruHbI9QzOGzNft6UaDy3PkU34y_k'
-        self.TG_CHAT_ID = 173075290
-        self.API_HOST = 'https://api.telegram.org'
+    API_HOST = 'https://api.telegram.org'
 
-    def parse_notification(self, celery_response, fixture):
+    def __init__(self):
+        load_dotenv()
+        self.TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
+
+    def parse_notification(self, celery_response, fixture, chat_id):
         # Parse response to form notification message
         bet_old = celery_response[0]
         bet_new = celery_response[1][1]
         news = celery_response[1][0]
         teams = list(news)
         notification_text = f'__*{teams[0]}* vs *{teams[1]}*__\n'
-        notification_text += f'Odds 24h before:\n'
-        print(bet_old)
+        notification_text += f'Odds 1h before the match:\n'
         for key in bet_old:
             notification_text += f'`{key}: {bet_old[key]}`\n'
         notification_text += '\nOdds after team news:\n'
@@ -42,7 +44,7 @@ class ResponseParser:
         }
         inline_keyboard_markup_json = json.dumps(inline_keyboard_markup)
         params = {
-            'chat_id': self.TG_CHAT_ID,
+            'chat_id': chat_id,
             'text': notification_text,
             'parse_mode': 'MarkdownV2',
             'reply_markup': inline_keyboard_markup_json

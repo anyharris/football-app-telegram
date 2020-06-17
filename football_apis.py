@@ -1,27 +1,27 @@
 # football_apis.py
 '''
-I need a better API for real time match data
+Ready for production
+Should add exception handling though
 '''
 import requests
+from dotenv import load_dotenv
+import os
 
 
 class Football:
-    API_HOST = 'https://api-football-v1.p.rapidapi.com/v2'
-    BOOKMAKER_ID = 3  # Betfair. Pinnacle is 4
-    LEAGUE_ID = 524  # German bundesliga is 754. 524 is english prem
-    API_KEY = '9a3a7d1d81msh7c32f567f3666e0p12ad03jsndd531285bac1'
-
-    API_KEY_THEODDS = 'c2badc9ffea53e976b5420fc2a623ac6'
+    LEAGUE_ID_APIFOOTBALL = 524  # German bundesliga 2019 is 754. English prem 2019 is 524
+    API_HOST_APIFOOTBALL = 'https://api-football-v1.p.rapidapi.com'
     API_HOST_THEODDS = 'https://api.the-odds-api.com'
 
-    def __init__(self, api_key=None):
-        pass
- #       self.API_KEY = api_key
+    def __init__(self):
+        load_dotenv()
+        self.API_KEY_APIFOOTBALL = os.getenv('API_KEY_APIFOOTBALL')
+        self.API_KEY_THEODDS = os.getenv('API_KEY_THEODDS')
 
     def _headers(self):
         headers = {
             'x-rapidapi-host': "api-football-v1.p.rapidapi.com",
-            'x-rapidapi-key': self.API_KEY
+            'x-rapidapi-key': self.API_KEY_APIFOOTBALL
         }
         return headers
 
@@ -30,30 +30,25 @@ class Football:
         response = requests.get(uri)
         return response
 
-    def _get(self, path, headers=None, querystring=None):
-        uri = self.API_HOST+path
+    def _get_apifootball(self, path, headers, querystring=None):
+        uri = self.API_HOST_APIFOOTBALL+path
         response = requests.get(uri, headers=headers, params=querystring)
         return response
 
-    def get_odds_fixture(self, fixture_id):
-        path = f'/odds/fixture/{fixture_id}/bookmaker/{self.BOOKMAKER_ID}'
-        headers = self._headers()
-        response = self._get(path=path, headers=headers)
-        return response
-
     def get_fixtures_leaguedate(self, date):
-        path = f'/fixtures/league/{self.LEAGUE_ID}/{date}'
+        path = f'/v2/fixtures/league/{self.LEAGUE_ID_APIFOOTBALL}/{date}'
         headers = self._headers()
-        response = self._get(path=path, headers=headers)
+        response = self._get_apifootball(path=path, headers=headers)
         return response
 
     def get_news(self, fixture_id):
-        path = f'/lineups/{fixture_id}'
+        path = f'/v2/lineups/{fixture_id}'
         headers = self._headers()
-        response = self._get(path=path, headers=headers)
+        response = self._get_apifootball(path=path, headers=headers)
         return response
 
     def get_odds_theodds(self):
         path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_epl&region=uk&mkt=h2h'
+#        path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_germany_bundesliga&region=eu&mkt=h2h'
         response = self._get_theodds(path=path)
         return response
