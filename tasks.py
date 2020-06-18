@@ -29,10 +29,7 @@ TEAMS_THEODDS = ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brighton and Hove Alb
                  'Crystal Palace', 'Everton', 'Leicester City', 'Liverpool', 'Manchester City', 'Manchester United',
                  'Newcastle United', 'Norwich City', 'Sheffield United', 'Southampton', 'Tottenham Hotspur',
                  'Watford', 'West Ham United', 'Wolverhampton Wanderers']
-'''
-TEAMS_APIFOOTBALL = ['Borussia Monchengladbach', 'SC Freiburg', 'Union Berlin', 'Werder Bremen']
-TEAMS_THEODDS = ['Borussia Monchengladbach', 'SC Freiburg', 'Union Berlin', 'Werder Bremen']
-'''
+
 CHAT_IDS = [
     173075290,  # Nick
     200905953   # Rob
@@ -108,9 +105,10 @@ def news(fixture):
         response = footie.get_news(fixture_id).json()
         print(response)
         if response['api']['results'] != 0:
-            fixture_news = response['api']['lineUps']
-            print(f'got the news for fixture {fixture}')
-            return fixture_news
+            if response['api']['lineUps'][next(iter(response['api']['lineUps']))]['formation'] is not None:
+                fixture_news = response['api']['lineUps']
+                print(f'got the news for fixture {fixture}')
+                return fixture_news
         print('waiting 5 mins for new news')
         time.sleep(60 * 5)
 
