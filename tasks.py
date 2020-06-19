@@ -110,8 +110,8 @@ def news(fixture):
                 fixture_news = response['api']['lineUps']
                 print(f'got the news for fixture {fixture}')
                 return fixture_news
-        print('waiting 5 mins for new news')
-        time.sleep(60 * 5)
+        print('waiting 1 min for new news')
+        time.sleep(60 * 1)
 
 
 @app.task(name='tasks.messenger')
@@ -132,8 +132,8 @@ def execute(fixture):
     event_timestamp = fixture['event_timestamp']
     now = int(time.time())
     job = chain(
-        news.s(fixture).set(countdown=(event_timestamp - now - (60 * 59))),
-        odds.s(fixture).set(countdown=(60 * 2))
+        news.s(fixture).set(countdown=(event_timestamp - now - (60 * 58))),
+        odds.s(fixture).set(countdown=(60 * 1))
     )
-    chord([odds.s(prev_result=False, fixture=fixture).set(countdown=(event_timestamp - now - (60 * 90))), job])(messenger.s(fixture_id))
+    chord([odds.s(prev_result=False, fixture=fixture).set(countdown=(event_timestamp - now - (60 * 70))), job])(messenger.s(fixture_id))
     print(f'executed fixture {fixture}')

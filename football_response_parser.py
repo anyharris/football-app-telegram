@@ -23,7 +23,7 @@ class ResponseParser:
         news = celery_response[1][0]
         teams = list(news)
         notification_text = f'__*{teams[0]}* vs *{teams[1]}*__\n'
-        notification_text += f'`      90mins  Post-news`\n'
+        notification_text += f'`      70mins  Post-news`\n'
         for key in bet_old:
             notification_text += f'`{key}: {bet_old[key]:<5}   {bet_new[key]}`\n'
         notification_text = notification_text.replace('.', '\\.')
