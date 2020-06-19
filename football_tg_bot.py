@@ -1,6 +1,7 @@
 # football_tg_bot.py
 '''
 Ready for production
+nohup python football_tg_bot > football_tg_bot.log &
 '''
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, CallbackContext
 from football_postgres import FootballPostgresql

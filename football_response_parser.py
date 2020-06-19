@@ -23,12 +23,9 @@ class ResponseParser:
         news = celery_response[1][0]
         teams = list(news)
         notification_text = f'__*{teams[0]}* vs *{teams[1]}*__\n'
-        notification_text += f'Odds 90 mins before the match:\n'
+        notification_text += f'`      90mins  Post-news`\n'
         for key in bet_old:
-            notification_text += f'`{key}: {bet_old[key]}`\n'
-        notification_text += '\nOdds after team news:\n'
-        for key in bet_new:
-            notification_text += f'`{key}: {bet_new[key]}`\n'
+            notification_text += f'`{key}: {bet_old[key]:<5}   {bet_new[key]}`\n'
         notification_text = notification_text.replace('.', '\\.')
         # Format telegram bot API request and send the notification message
         #   Includes a button to press for additional team news information
@@ -36,7 +33,7 @@ class ResponseParser:
         path = f'/bot{self.TG_BOT_TOKEN}/sendMessage'
         uri = self.API_HOST + path
         inline_keyboard_button = [[{
-            'text': 'Tell me more...',
+            'text': 'Show lineups',
             'callback_data': fixture
         }]]
         inline_keyboard_markup = {

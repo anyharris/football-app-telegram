@@ -4,6 +4,7 @@ Ready for production. Just need to put it on the server
 
 to start worker:
 celery -A tasks worker -B -l info
+nohup celery -A tasks worker -B -l info > celery.log &
 
 to show celery queue:
 sudo rabbitmqctl list_queues
@@ -78,16 +79,16 @@ def odds(prev_result, fixture):
                 if j['site_key'] == 'betfair':
                     if i['home_team'] == i['teams'][0]:
                         fixture_odds = {
-                            'Home': round((j['odds']['h2h'][0] + j['odds']['h2h_lay'][0]) / 2, 2),
-                            'Away': round((j['odds']['h2h'][1] + j['odds']['h2h_lay'][1]) / 2, 2),
-                            'Draw': round((j['odds']['h2h'][2] + j['odds']['h2h_lay'][2]) / 2, 2),
+                            'Home': round(j['odds']['h2h'][0], 2),
+                            'Away': round(j['odds']['h2h'][1], 2),
+                            'Draw': round(j['odds']['h2h'][2], 2),
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
                     else:
                         fixture_odds = {
-                            'Home': round((j['odds']['h2h'][1] + j['odds']['h2h_lay'][1]) / 2, 2),
-                            'Away': round((j['odds']['h2h'][0] + j['odds']['h2h_lay'][0]) / 2, 2),
-                            'Draw': round((j['odds']['h2h'][2] + j['odds']['h2h_lay'][2]) / 2, 2),
+                            'Home': round(j['odds']['h2h'][1], 2),
+                            'Away': round(j['odds']['h2h'][0], 2),
+                            'Draw': round(j['odds']['h2h'][2], 2),
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
     if prev_result:
