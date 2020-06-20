@@ -13,7 +13,7 @@ import logging
 load_dotenv()
 TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
 fpsql = FootballPostgresql()
-logging.basicConfig(filename='tg_bot.log', level=logging.DEBUG)
+logging.basicConfig(filename='tg_bot.log', level=logging.INFO)
 
 
 def news_callback_query_handler(update, context):
