@@ -33,7 +33,9 @@ TEAMS_THEODDS = ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brighton and Hove Alb
 
 CHAT_IDS = [
     173075290,  # Nick
-    200905953   # Rob
+    200905953,   # Rob
+    -1001189281782,  # Rob's group
+    -497587937  # Test group
 ]
 
 
