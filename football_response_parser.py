@@ -1,16 +1,23 @@
 # football_response_parser.py
 '''
-Ready for production
+Add parser for league and individual players
 '''
 import requests
 import json
 from football_postgres import FootballPostgresql
 from dotenv import load_dotenv
 import os
+import time
 
 
 class ResponseParser:
     API_HOST = 'https://api.telegram.org'
+    TEAMS_SHORT = ['BOU', 'ARS', 'AVA', 'BRH', 'BUR', 'CHE', 'CRY',
+                   'EVE', 'LEI', 'LIV', 'MCI', 'MUN', 'NEW', 'NOR',
+                   'SHU', 'SOU', 'TOT', 'WAT', 'WHU', 'WLV']
+    TEAMS_LONG = ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brighton', 'Burnley', 'Chelsea', 'Crystal Palace',
+                  'Everton', 'Leicester', 'Liverpool', 'Manchester City', 'Manchester United', 'Newcastle',
+                  'Norwich', 'Sheffield Utd', 'Southampton', 'Tottenham', 'Watford', 'West Ham', 'Wolves']
 
     def __init__(self):
         load_dotenv()
@@ -57,7 +64,6 @@ class ResponseParser:
             data = news[key]
             news_notification += f'__*{key}*__\n'
             news_notification += f'`{data["formation"]} formation`\n\n'
-            news_notification += f'Coach:\n`{data["coach"]}`\n\n'
             news_notification += 'Starting XI:\n'
             for i in data['startXI']:
                 news_notification += f'`{i["number"]:2}  {i["player"]}`\n'
@@ -71,3 +77,36 @@ class ResponseParser:
         #    Uses the fixture number as a unique identifier in the db
         fpsql = FootballPostgresql()
         fpsql.write_news(fixture, news_notification)
+
+    def parse_league(self, request_response):
+        standings = request_response['api']['standings']
+        text = '```'
+        text += f'     MP  W  D  L  GF GA  GD Pts\n'
+        for i in standings[0]:
+            team_long = i["teamName"]
+            team_position = self.TEAMS_LONG.index(team_long)
+            team_short = self.TEAMS_SHORT[team_position]
+            '''
+            i["teamName"] = i["teamName"].replace('Manchester', 'Man')
+            i["teamName"] = i["teamName"].replace('United', 'Utd')
+            '''
+            text += f'{team_short:3}  {i["all"]["matchsPlayed"]:>2} {i["all"]["win"]:>2} {i["all"]["draw"]:>2} ' \
+                    f'{i["all"]["lose"]:>2}  {i["all"]["goalsFor"]:>2} {i["all"]["goalsAgainst"]:>2} {i["goalsDiff"]:>3} ' \
+                    f'{i["points"]:>3}\n'
+        text += '```'
+        text = text.replace('-', '\\-')
+        return text
+
+    def parse_player(self, request_response):
+        pass
+
+    def parse_fixtures(self, request_response):
+        fixtures = request_response['api']['fixtures']
+        text = '__*Today\'s Fixtures*__\n'
+        for i in fixtures:
+            text += f'{i["homeTeam"]["team_name"]} vs {i["awayTeam"]["team_name"]}\n'
+            text += f'`{time.strftime("%m-%d %H:%M", time.gmtime(i["event_timestamp"]))} in England`\n'
+            text += f'`{time.strftime("%m-%d %H:%M", time.localtime(i["event_timestamp"]))} in Thailand`\n'
+        text = text[:-1]
+        text = text.replace('-', '\\-')
+        return text

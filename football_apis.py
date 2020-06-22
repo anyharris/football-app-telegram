@@ -12,6 +12,7 @@ class Football:
     LEAGUE_ID_APIFOOTBALL = 524  # German bundesliga 2019 is 754. English prem 2019 is 524
     API_HOST_APIFOOTBALL = 'https://api-football-v1.p.rapidapi.com'
     API_HOST_THEODDS = 'https://api.the-odds-api.com'
+    SEASON = '2019'
 
     def __init__(self):
         load_dotenv()
@@ -51,4 +52,28 @@ class Football:
         path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_epl&region=uk&mkt=h2h'
 #        path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_germany_bundesliga&region=eu&mkt=h2h'
         response = self._get_theodds(path=path)
+        return response
+
+    def get_league(self):
+        path = f'/v2/leagueTable/{self.LEAGUE_ID_APIFOOTBALL}'
+        headers = self._headers()
+        response = self._get_apifootball(path=path, headers=headers)
+        return response
+
+    def get_player_search(self, search_term):
+        path = f'/v2/players/search/{search_term}'
+        headers = self._headers()
+        response = self._get_apifootball(path=path, headers=headers)
+        return response
+
+    def get_player_id(self, player_id):
+        path = f'/v2/players/player/{player_id}/{self.SEASON}'
+        headers = self._headers()
+        response = self._get_apifootball(path=path, headers=headers)
+        return response
+
+    def get_league(self):
+        path = f'/v2/leagueTable/{self.LEAGUE_ID_APIFOOTBALL}'
+        headers = self._headers()
+        response = self._get_apifootball(path=path, headers=headers)
         return response
