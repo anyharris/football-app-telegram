@@ -24,21 +24,25 @@ fb = Football()
 logging.basicConfig(filename='tg_bot.log', level=logging.INFO)
 
 
-def news_callback_query_handler(update, context):
+def callback_query_handler(update, context):
+    bot = context.bot
     cqd = update.callback_query.data
-    logging.info(f'news callback for cqd {cqd}')
-    news = fpsql.read_news(cqd)
     chat_id = update.callback_query.message.chat_id
-    API_HOST = 'https://api.telegram.org'
-    path = f'/bot{TG_BOT_TOKEN}/sendMessage'
-    uri = API_HOST + path
-    params = {
-        'chat_id': chat_id,
-        'text': news,
-        'parse_mode': 'MarkdownV2',
-    }
-    requests.get(uri, params=params)
-    logging.info(f'sent request for cqd {cqd}')
+    if cqd[0] == 'f':
+        logging.info(f'news callback for cqd {cqd}')
+        msg_text = fpsql.read_news(cqd[1:])
+        bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+        logging.info(f'sent request for cqd {cqd}')
+    elif cqd[0] == 'p':
+        print('almost there')
+        print(cqd)
+        print(cqd[1:])
+        logging.info(f'player callback for cqd {cqd}')
+        response = fb.get_player_id(cqd[1:]).json()
+        msg_text = rp.parse_player_stats(response)
+        bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+    else:
+        logging.warning('Button click didn\'t callback anything')
 
 
 def league_stats(update, context):
@@ -59,19 +63,29 @@ def player_stats(update, context):
     print(response)
     print('t2')
     player_list = rp.parse_player_search(response)
-    if len(player_list) > 4:
-        msg_text = ['Too many search responses, please be more specific.']
-        # add something with buttons here too
-    else:
-        msg_text = rp.parse_player_stats(player_list)
-    if len(msg_text) == 1:
+    print(len(player_list))
+    if len(player_list) == 0:
+        msg_text = 'No search results\\.'
+        bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+    elif len(player_list) > 4:
+        msg_text = 'Too many search results\\, please be more specific\\.'
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     else:
-        keyboard = []
-        for i in player_list:
-            keyboard.append(InlineKeyboardButton(i['player_name'], callback_data=i['player_id']))
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('Please choose:', reply_markup=reply_markup)
+        if len(player_list) == 1:
+            print('w1')
+            response = fb.get_player_id(player_list[0]['player_id']).json()
+            print(response)
+            msg_text = rp.parse_player_stats(response)
+            print(msg_text)
+            bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+        else:
+            keyboard = []
+            for i in player_list:
+                keyboard.append([InlineKeyboardButton(i['player_name'], callback_data=f'p{i["player_id"]}')])
+            print('keyboard')
+            print(keyboard)
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
 
 def fixtures_today(update, context):
@@ -86,7 +100,7 @@ def fixtures_today(update, context):
 def main():
     updater = Updater(TG_BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
-    dp.add_handler(CallbackQueryHandler(news_callback_query_handler))
+    dp.add_handler(CallbackQueryHandler(callback_query_handler))
     dp.add_handler(CommandHandler('league', league_stats))
     dp.add_handler(CommandHandler('player', player_stats, pass_args=True))
     dp.add_handler(CommandHandler('fixtures', fixtures_today))

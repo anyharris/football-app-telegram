@@ -12,7 +12,7 @@ class Football:
     LEAGUE_ID_APIFOOTBALL = 524  # German bundesliga 2019 is 754. English prem 2019 is 524
     API_HOST_APIFOOTBALL = 'https://api-football-v1.p.rapidapi.com'
     API_HOST_THEODDS = 'https://api.the-odds-api.com'
-    SEASON = '2019'
+    SEASON = '2019-2020'
 
     def __init__(self):
         load_dotenv()
