@@ -147,15 +147,11 @@ class ResponseParser:
         return text
 
     def parse_player_search(self, request_response):
-        print('p1')
         players = request_response['api']['players']
-        print(players)
         players[:] = [i for i in players if (i['player_id'] in self.PREM_PLAYERS)]
-        print(players)
         text = []
         for i in players:
             text.append(i)
-        print('p2')
         return text
 
     def parse_fixtures(self, request_response):
@@ -164,17 +160,14 @@ class ResponseParser:
         for i in fixtures:
             text += f'{i["homeTeam"]["team_name"]} vs {i["awayTeam"]["team_name"]}\n'
             text += f'`{time.strftime("%d-%m %H:%M", time.gmtime(i["event_timestamp"]))} in England`\n'
-            text += f'`{time.strftime("%d-%m %H:%M", time.localtime(i["event_timestamp"]))} in Thailand`\n'
+            text += f'`{time.strftime("%d-%m %H:%M", time.localtime(i["event_timestamp"]))} in Thailand`\n\n'
         text = text[:-1]
         text = text.replace('-', '\\-')
         return text
 
     def parse_player_stats(self, request_response):
-        print('x1')
         raw_stats = request_response['api']['players']
-        print(raw_stats)
         raw_stats[:] = [i for i in raw_stats if (i['league'] == 'Premier League')]
-        print(raw_stats)
         player = raw_stats[0]
         text = f'{player["firstname"]} {player["lastname"]}\n'
         text += f'Birth date: {player["birth_date"]}\n'
@@ -185,9 +178,5 @@ class ResponseParser:
         text += f'Tackles:\n `tot: {player["tackles"]["total"]}, blk: {player["tackles"]["blocks"]}, int: {player["tackles"]["interceptions"]}`\n'
         text += f'Duels:\n `tot: {player["duels"]["total"]}, won: {"{:.0%}".format(player["duels"]["won"]/player["duels"]["total"])}`\n'
         text += f'Dribbles:\n `att: {player["dribbles"]["attempts"]}, success: {"{:.0%}".format(player["dribbles"]["success"]/player["dribbles"]["attempts"])}`'
-        #text += f'Fouls:\n `drawn: {player["fouls"]["drawn"]}  committed: {player["fouls"]["committed"]}`\n'
-        #text += f'Cards:\n `yellow: {player["cards"]["yellow"]}  red:{player["cards"]["red"]}`\n'
-        #text += f'Penalty:\n `won: {player["penalty"]["won"]}  com: {player["penalty"]["commited"]}  suc: {player["penalty"]["success"]}  miss: {player["penalty"]["missed"]}  saved: {player["penalty"]["saved"]}`\n'
-        #text += f'Substitutes:\n `in: {player["substitutes"]["in"]}  out: {player["substitutes"]["out"]}  bench: {player["substitutes"]["bench"]}`'
         text = text.replace('-', '\\-')
         return text

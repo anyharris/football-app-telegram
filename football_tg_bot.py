@@ -31,12 +31,10 @@ def callback_query_handler(update, context):
     if cqd[0] == 'f':
         logging.info(f'news callback for cqd {cqd}')
         msg_text = fpsql.read_news(cqd[1:])
+        print(msg_text)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
         logging.info(f'sent request for cqd {cqd}')
     elif cqd[0] == 'p':
-        print('almost there')
-        print(cqd)
-        print(cqd[1:])
         logging.info(f'player callback for cqd {cqd}')
         response = fb.get_player_id(cqd[1:]).json()
         msg_text = rp.parse_player_stats(response)
@@ -54,16 +52,11 @@ def league_stats(update, context):
 
 
 def player_stats(update, context):
-    print('t1')
     bot = context.bot
     chat_id = update.effective_chat.id
     search_term = context.args[0]
-    print(search_term)
     response = fb.get_player_search(search_term).json()
-    print(response)
-    print('t2')
     player_list = rp.parse_player_search(response)
-    print(len(player_list))
     if len(player_list) == 0:
         msg_text = 'No search results\\.'
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
@@ -72,18 +65,13 @@ def player_stats(update, context):
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     else:
         if len(player_list) == 1:
-            print('w1')
             response = fb.get_player_id(player_list[0]['player_id']).json()
-            print(response)
             msg_text = rp.parse_player_stats(response)
-            print(msg_text)
             bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
         else:
             keyboard = []
             for i in player_list:
                 keyboard.append([InlineKeyboardButton(i['player_name'], callback_data=f'p{i["player_id"]}')])
-            print('keyboard')
-            print(keyboard)
             reply_markup = InlineKeyboardMarkup(keyboard)
             update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
