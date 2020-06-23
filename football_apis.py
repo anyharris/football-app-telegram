@@ -61,19 +61,16 @@ class Football:
         return response
 
     def get_player_search(self, search_term):
+        print('f1')
         path = f'/v2/players/search/{search_term}'
+        print(path)
         headers = self._headers()
         response = self._get_apifootball(path=path, headers=headers)
+        print('f2')
         return response
 
     def get_player_id(self, player_id):
         path = f'/v2/players/player/{player_id}/{self.SEASON}'
-        headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
-        return response
-
-    def get_league(self):
-        path = f'/v2/leagueTable/{self.LEAGUE_ID_APIFOOTBALL}'
         headers = self._headers()
         response = self._get_apifootball(path=path, headers=headers)
         return response

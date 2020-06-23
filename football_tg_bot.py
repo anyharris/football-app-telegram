@@ -4,6 +4,7 @@ add handlers for league and player stats
 
 nohup python football_tg_bot.py > football_tg_bot.log &
 '''
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, CallbackContext
 from football_postgres import FootballPostgresql
 from football_response_parser import ResponseParser
@@ -12,7 +13,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import logging
-from datetime import date
+from datetime import datetime
 import json
 
 load_dotenv()
@@ -49,18 +50,34 @@ def league_stats(update, context):
 
 
 def player_stats(update, context):
+    print('t1')
     bot = context.bot
     chat_id = update.effective_chat.id
-    search_term = context.args
-    response = fb.get_player(search_term)
-    msg_text = rp.parse_player(response)
-    bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+    search_term = context.args[0]
+    print(search_term)
+    response = fb.get_player_search(search_term).json()
+    print(response)
+    print('t2')
+    player_list = rp.parse_player_search(response)
+    if len(player_list) > 4:
+        msg_text = ['Too many search responses, please be more specific.']
+        # add something with buttons here too
+    else:
+        msg_text = rp.parse_player_stats(player_list)
+    if len(msg_text) == 1:
+        bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+    else:
+        keyboard = []
+        for i in player_list:
+            keyboard.append(InlineKeyboardButton(i['player_name'], callback_data=i['player_id']))
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
 
 def fixtures_today(update, context):
     bot = context.bot
     chat_id = update.effective_chat.id
-    date_today = str(date.today())
+    date_today = str(datetime.utcnow().date())
     response = fb.get_fixtures_leaguedate(date_today).json()
     msg_text = rp.parse_fixtures(response)
     bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
