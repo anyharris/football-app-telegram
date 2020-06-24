@@ -37,7 +37,7 @@ def callback_query_handler(update, context):
     elif cqd[0] == 'p':
         logging.info(f'player callback for cqd {cqd}')
         response = fb.get_player_id(cqd[1:]).json()
-        response[:] = response[0][0]
+        response = response[0][0]
         msg_text = rp.parse_player_stats(response)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     else:
