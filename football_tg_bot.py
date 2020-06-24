@@ -32,11 +32,13 @@ def callback_query_handler(update, context):
         logging.info(f'news callback for cqd {cqd}')
         msg_text = fpsql.read_news(cqd[1:])
         print(msg_text)
+        print(msg_text)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
         logging.info(f'sent request for cqd {cqd}')
     elif cqd[0] == 'p':
         logging.info(f'player callback for cqd {cqd}')
         response = fb.get_player_id(cqd[1:]).json()
+        response[:] = response[0][0]
         msg_text = rp.parse_player_stats(response)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     else:
