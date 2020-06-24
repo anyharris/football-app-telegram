@@ -31,8 +31,9 @@ def callback_query_handler(update, context):
     if cqd[0] == 'f':
         logging.info(f'news callback for cqd {cqd}')
         msg_text = fpsql.read_news(cqd[1:])
+        msg_text[:] = msg_text[0]
         print(msg_text)
-        print(msg_text)
+        print(type(msg_text))
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
         logging.info(f'sent request for cqd {cqd}')
     elif cqd[0] == 'p':
