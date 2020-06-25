@@ -76,6 +76,9 @@ class ResponseParser:
         load_dotenv()
         self.TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
 
+    def _weird_division(self, n, d):
+        return n / d if d else 0
+
     def parse_notification(self, celery_response, fixture, chat_id):
         # Parse response to form notification message
         bet_old = celery_response[0]
@@ -173,10 +176,10 @@ class ResponseParser:
         text += f'Birth date: {player["birth_date"]}\n'
         text += f'Games:\n `appeared: {player["games"]["appearences"]}, mins: {player["games"]["minutes_played"]}`\n'
         text += f'Goals:\n `tot: {player["goals"]["total"]}, assists: {player["goals"]["assists"]}`\n'
-        text += f'Shots:\n `tot: {player["shots"]["total"]}, on: {"{:.0%}".format(player["shots"]["on"]/player["shots"]["total"])}`\n'
+        text += f'Shots:\n `tot: {player["shots"]["total"]}, on: {"{:.0%}".format(self._weird_division(player["shots"]["on"], player["shots"]["total"]))}`\n'
         text += f'Passes:\n `tot: {player["passes"]["total"]}, key: {player["passes"]["key"]}, acc: {player["passes"]["accuracy"]}%`\n'
         text += f'Tackles:\n `tot: {player["tackles"]["total"]}, blk: {player["tackles"]["blocks"]}, int: {player["tackles"]["interceptions"]}`\n'
-        text += f'Duels:\n `tot: {player["duels"]["total"]}, won: {"{:.0%}".format(player["duels"]["won"]/player["duels"]["total"])}`\n'
-        text += f'Dribbles:\n `att: {player["dribbles"]["attempts"]}, success: {"{:.0%}".format(player["dribbles"]["success"]/player["dribbles"]["attempts"])}`'
+        text += f'Duels:\n `tot: {player["duels"]["total"]}, won: {"{:.0%}".format(self._weird_division(player["duels"]["won"], player["duels"]["total"]))}`\n'
+        text += f'Dribbles:\n `att: {player["dribbles"]["attempts"]}, success: {"{:.0%}".format(self._weird_division(player["dribbles"]["success"], player["dribbles"]["attempts"]))}`'
         text = text.replace('-', '\\-')
         return text
