@@ -1,20 +1,17 @@
 # football_tg_bot.py
-'''
-add handlers for league and player stats
-
+"""
+to run:
 nohup python football_tg_bot.py > football_tg_bot.log &
-'''
+"""
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, CallbackContext
 from football_postgres import FootballPostgresql
 from football_response_parser import ResponseParser
 from football_apis import Football
-import requests
 from dotenv import load_dotenv
 import os
 import logging
 from datetime import datetime
-import json
 
 load_dotenv()
 TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')

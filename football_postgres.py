@@ -1,7 +1,4 @@
 # football_postgres.py
-'''
-Ready for production
-'''
 import psycopg2
 import datetime
 from dotenv import load_dotenv
