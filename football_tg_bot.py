@@ -6,10 +6,10 @@ v1: 1226601001:AAEPGWAChBRbk93RMaJ5GtD8sdEgyHxGAtI
 v2: 1266321518:AAG46QcdxkoebdmnTLMPabIYGI9hhCYiEIQ
 """
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, CallbackContext
-from postgres_methods import FootballPostgresql
-from response_parser import ResponseParser
-from api_wrappers import APIFootball, TheOdds
+from telegram.ext import Updater, CallbackQueryHandler, CommandHandler
+from modules.postgres_methods import FootballPostgresql
+from modules.response_parser import ResponseParser
+from modules.api_wrappers import APIFootball, TheOdds
 from dotenv import load_dotenv
 import os
 import logging
@@ -22,7 +22,7 @@ apif = APIFootball(api_key=os.getenv('API_KEY_APIFOOTBALL'), season=int(os.geten
 todds = TheOdds(api_key=os.getenv('API_KEY_THEODDS'))
 fpsql = FootballPostgresql()
 rp = ResponseParser()
-with open('league_data.txt') as json_file:
+with open('data/league_data.txt') as json_file:
     league_data = json.load(json_file)
 LEAGUE_ID = league_data['APIFootball_league_ID']
 
@@ -94,14 +94,14 @@ def fixtures_today(update, context):
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="All set!")
     try:
-        with open('chat_ids.txt') as json_file:
+        with open('data/chat_ids.txt') as json_file:
             chat_dict = json.load(json_file)
         chat_ids = chat_dict['chat_ids']
     except IOError:
         chat_ids = []
     chat_ids.append(update.effective_chat.id)
     chat_dict = {'chat_ids': chat_ids}
-    with open('chat_ids.txt', 'w') as outfile:
+    with open('data/chat_ids.txt', 'w') as outfile:
         json.dump(chat_dict, outfile)
 
 

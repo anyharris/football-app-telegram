@@ -5,7 +5,7 @@ This should be run every season, or maybe more often if the players are changing
 I wish there was a good way to get the team abbreviations at the same time
 Probably I could dig up an API somewhere that has them
 """
-from football_apis import TheOdds, APIFootball
+from modules.api_wrappers import TheOdds, APIFootball
 import json
 from dotenv import load_dotenv
 import os

@@ -4,7 +4,7 @@ Add parser for league and individual players
 '''
 import requests
 import json
-from postgres_methods import FootballPostgresql
+from modules.postgres_methods import FootballPostgresql
 from dotenv import load_dotenv
 import os
 import time
@@ -20,7 +20,7 @@ class ResponseParser:
     def __init__(self):
         load_dotenv()
         self.TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
-        with open('league_data.txt') as json_file:
+        with open('data/league_data.txt') as json_file:
             league_data = json.load(json_file)
         self.TEAMS_LONG = league_data['APIFootball_team_names']
         self.PREM_PLAYERS = league_data['APIFootball_player_IDs']

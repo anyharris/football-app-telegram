@@ -17,16 +17,16 @@ from datetime import date
 from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 from celery.schedules import crontab
-from api_wrappers import APIFootball, TheOdds
-from response_parser import ResponseParser
+from modules.api_wrappers import APIFootball, TheOdds
+from modules.response_parser import ResponseParser
 
 
-with open('league_data.txt') as json_file:
+with open('data/league_data.txt') as json_file:
     league_data = json.load(json_file)
 TEAMS_APIFOOTBALL = league_data['APIFootball_team_names']
 TEAMS_THEODDS = league_data['TheOdds_team_names']
 LEAGUE_ID = league_data['APIFootball_league_ID']
-with open('chat_ids.txt') as json_file:
+with open('data/chat_ids.txt') as json_file:
     chat_dict = json.load(json_file)
 CHAT_IDS = chat_dict['chat_ids']
 
