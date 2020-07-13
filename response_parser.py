@@ -1,10 +1,10 @@
-# football_response_parser.py
+# response_parser.py
 '''
 Add parser for league and individual players
 '''
 import requests
 import json
-from football_postgres import FootballPostgresql
+from postgres_methods import FootballPostgresql
 from dotenv import load_dotenv
 import os
 import time

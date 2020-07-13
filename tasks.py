@@ -17,8 +17,8 @@ from datetime import date
 from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 from celery.schedules import crontab
-from football_apis import APIFootball, TheOdds
-from football_response_parser import ResponseParser
+from api_wrappers import APIFootball, TheOdds
+from response_parser import ResponseParser
 
 
 with open('league_data.txt') as json_file:

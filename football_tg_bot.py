@@ -7,9 +7,9 @@ v2: 1266321518:AAG46QcdxkoebdmnTLMPabIYGI9hhCYiEIQ
 """
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, CallbackContext
-from football_postgres import FootballPostgresql
-from football_response_parser import ResponseParser
-from football_apis import APIFootball, TheOdds
+from postgres_methods import FootballPostgresql
+from response_parser import ResponseParser
+from api_wrappers import APIFootball, TheOdds
 from dotenv import load_dotenv
 import os
 import logging
