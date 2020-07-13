@@ -2,8 +2,6 @@
 """
 to run:
 nohup python football_tg_bot.py > football_tg_bot.log &
-v1: 1226601001:AAEPGWAChBRbk93RMaJ5GtD8sdEgyHxGAtI
-v2: 1266321518:AAG46QcdxkoebdmnTLMPabIYGI9hhCYiEIQ
 """
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler
