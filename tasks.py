@@ -9,33 +9,33 @@ sudo rabbitmqctl list_queues
 to purge celery queue:
 celery -A tasks purge
 """
-
 import time
+import json
+import os
+from dotenv import load_dotenv
 from datetime import date
 from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 from celery.schedules import crontab
-from football_apis import Football
+from football_apis import APIFootball, TheOdds
 from football_response_parser import ResponseParser
 
 
-TEAMS_APIFOOTBALL = ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brighton', 'Burnley', 'Chelsea', 'Crystal Palace',
-                     'Everton', 'Leicester', 'Liverpool', 'Manchester City', 'Manchester United', 'Newcastle',
-                     'Norwich', 'Sheffield Utd', 'Southampton', 'Tottenham', 'Watford', 'West Ham', 'Wolves']
-TEAMS_THEODDS = ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brighton and Hove Albion', 'Burnley', 'Chelsea',
-                 'Crystal Palace', 'Everton', 'Leicester City', 'Liverpool', 'Manchester City', 'Manchester United',
-                 'Newcastle United', 'Norwich City', 'Sheffield United', 'Southampton', 'Tottenham Hotspur',
-                 'Watford', 'West Ham United', 'Wolverhampton Wanderers']
-
-CHAT_IDS = [
-    173075290,  # Nick
-    200905953,   # Rob
-    -1001189281782,  # Rob's group
-    -497587937  # Test group
-]
+with open('league_data.txt') as json_file:
+    league_data = json.load(json_file)
+TEAMS_APIFOOTBALL = league_data['APIFootball_team_names']
+TEAMS_THEODDS = league_data['TheOdds_team_names']
+LEAGUE_ID = league_data['APIFootball_league_ID']
+with open('chat_ids.txt') as json_file:
+    chat_dict = json.load(json_file)
+CHAT_IDS = chat_dict['chat_ids']
 
 
 app = Celery('tasks', backend='redis://localhost:6379/0', broker='pyamqp://guest@localhost//')
+
+load_dotenv()
+apif = APIFootball(api_key=os.getenv('API_KEY_APIFOOTBALL'), season=int(os.getenv('SEASON')))
+todds = TheOdds(api_key=os.getenv('API_KEY_THEODDS'))
 
 logger = get_task_logger(__name__)
 
@@ -51,8 +51,7 @@ app.conf.beat_schedule = {
 def fixtures():
     print(f'starting to get fixtures and execute them')
     date_today = str(date.today())
-    footie = Football()
-    response = footie.get_fixtures_leaguedate(date_today).json()
+    response = apif.get_fixtures_leaguedate(LEAGUE_ID, date_today).json()
     fixtures_response = response['api']['fixtures']
     for i in fixtures_response:
         fixture = {
@@ -66,12 +65,11 @@ def fixtures():
 
 @app.task(name='tasks.odds')
 def odds(prev_result, fixture):
-    footie = Football()
     event_timestamp = fixture['event_timestamp']
     home_team_apifootball = fixture['home_team']
     home_team_position = TEAMS_APIFOOTBALL.index(home_team_apifootball)
     home_team_theodds = TEAMS_THEODDS[home_team_position]
-    response = footie.get_odds_theodds().json()
+    response = todds.get_odds_theodds().json()
     for i in response['data']:
         if i['commence_time'] == event_timestamp and i['home_team'] == home_team_theodds:
             for j in i['sites']:
@@ -99,10 +97,9 @@ def odds(prev_result, fixture):
 @app.task(name='tasks.news')
 def news(fixture):
     print(f'starting to get news for fixture {fixture}')
-    footie = Football()
     fixture_id = fixture['fixture_id']
     while True:
-        response = footie.get_news(fixture_id).json()
+        response = apif.get_news(fixture_id).json()
         print(response)
         if response['api']['results'] != 0:
             if response['api']['lineUps'][next(iter(response['api']['lineUps']))]['formation'] is not None:

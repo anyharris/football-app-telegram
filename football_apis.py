@@ -1,76 +1,98 @@
 # football_apis.py
-'''
-Ready for production
-Should add exception handling though
-'''
 import requests
-from dotenv import load_dotenv
-import os
 
 
-class Football:
-    LEAGUE_ID_APIFOOTBALL = 524  # German bundesliga 2019 is 754. English prem 2019 is 524
-    API_HOST_APIFOOTBALL = 'https://api-football-v1.p.rapidapi.com'
-    API_HOST_THEODDS = 'https://api.the-odds-api.com'
-    SEASON = '2019-2020'
+class RestfulAPI:
+    def _get(self, uri, headers=None, params=None):
+        response = requests.get(uri, headers=headers, params=params)
+        return response
 
-    def __init__(self):
-        load_dotenv()
-        self.API_KEY_APIFOOTBALL = os.getenv('API_KEY_APIFOOTBALL')
-        self.API_KEY_THEODDS = os.getenv('API_KEY_THEODDS')
+
+class APIFootball(RestfulAPI):
+    API_HOST = 'https://api-football-v1.p.rapidapi.com'
+
+    def __init__(self, api_key, season):
+        self.API_KEY = api_key
+        self.SEASON = f'{season}-{season+1}'
 
     def _headers(self):
         headers = {
-            'x-rapidapi-host': "api-football-v1.p.rapidapi.com",
-            'x-rapidapi-key': self.API_KEY_APIFOOTBALL
+            'x-rapidapi-host': self.API_HOST[8:],
+            'x-rapidapi-key': self.API_KEY
         }
         return headers
 
-    def _get_theodds(self, path):
-        uri = self.API_HOST_THEODDS+path
-        response = requests.get(uri)
-        return response
-
-    def _get_apifootball(self, path, headers, querystring=None):
-        uri = self.API_HOST_APIFOOTBALL+path
-        response = requests.get(uri, headers=headers, params=querystring)
-        return response
-
-    def get_fixtures_leaguedate(self, date):
-        path = f'/v2/fixtures/league/{self.LEAGUE_ID_APIFOOTBALL}/{date}'
+    def get_fixtures_leaguedate(self, league_id, date):
+        path = f'/v2/fixtures/league/{league_id}/{date}'
+        uri = self.API_HOST + path
         headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
+        response = self._get(uri, headers=headers)
         return response
 
     def get_news(self, fixture_id):
         path = f'/v2/lineups/{fixture_id}'
+        uri = self.API_HOST + path
         headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
+        response = self._get(uri, headers=headers)
         return response
 
-    def get_odds_theodds(self):
-        path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_epl&region=uk&mkt=h2h'
-#        path = f'/v3/odds/?apiKey={self.API_KEY_THEODDS}&sport=soccer_germany_bundesliga&region=eu&mkt=h2h'
-        response = self._get_theodds(path=path)
-        return response
-
-    def get_league(self):
-        path = f'/v2/leagueTable/{self.LEAGUE_ID_APIFOOTBALL}'
+    def get_league(self, league_id):
+        path = f'/v2/leagueTable/{league_id}'
+        uri = self.API_HOST + path
         headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
+        response = self._get(uri, headers=headers)
         return response
 
     def get_player_search(self, search_term):
-        print('f1')
         path = f'/v2/players/search/{search_term}'
-        print(path)
+        uri = self.API_HOST + path
         headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
-        print('f2')
+        response = self._get(uri, headers=headers)
         return response
 
     def get_player_id(self, player_id):
         path = f'/v2/players/player/{player_id}/{self.SEASON}'
+        uri = self.API_HOST + path
         headers = self._headers()
-        response = self._get_apifootball(path=path, headers=headers)
+        response = self._get(uri, headers=headers)
+        return response
+
+    def get_squad(self, team_id):
+        path = f'/v2/players/squad/{team_id}/{self.SEASON}'
+        uri = self.API_HOST + path
+        headers = self._headers()
+        response = self._get(uri, headers=headers)
+        return response
+
+    def get_league_search(self, search_term):
+        path = f'/v2/leagues/search/{search_term}'
+        uri = self.API_HOST + path
+        headers = self._headers()
+        response = self._get(uri, headers=headers)
+        return response
+
+    def get_teams(self, league_id):
+        path = f'/v2/teams/league/{league_id}'
+        uri = self.API_HOST + path
+        headers = self._headers()
+        response = self._get(uri, headers=headers)
+        return response
+
+
+class TheOdds(RestfulAPI):
+    API_HOST = 'https://api.the-odds-api.com'
+
+    def __init__(self, api_key):
+        self.API_KEY = api_key
+
+    def get_odds_theodds(self):
+        path = f'/v3/odds/'
+        uri = self.API_HOST + path
+        params = {
+            'apiKey': self.API_KEY,
+            'sport': 'soccer_epl',
+            'region': 'uk',
+            'mkt': 'h2h'
+        }
+        response = self._get(uri, params=params)
         return response
