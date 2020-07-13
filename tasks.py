@@ -1,13 +1,13 @@
 # tasks.py
 """
 to start worker:
-nohup celery -A tasks worker -B -l info -Q football -n football_worker@%h > celery.log &
+nohup celery -A tasks worker -B -l info > celery.log &
 
 to show celery queue:
 sudo rabbitmqctl list_queues
 
 to purge celery queue:
-celery -A tasks purge -Q football
+celery -A tasks purge
 """
 
 import time
@@ -36,14 +36,6 @@ CHAT_IDS = [
 
 
 app = Celery('tasks', backend='redis://localhost:6379/0', broker='pyamqp://guest@localhost//')
-app.conf.update({
-    'task_routes': {
-        'tasks.fixtures': {'queue': 'football'},
-        'tasks.odds': {'queue': 'football'},
-        'tasks.news': {'queue': 'football'},
-        'tasks.messenger': {'queue': 'football'},
-        'tasks.execute': {'queue': 'football'}
-    }})
 
 logger = get_task_logger(__name__)
 
