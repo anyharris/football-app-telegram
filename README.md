@@ -14,6 +14,6 @@ The bot also takes a few commands:
 
 ### Setup
 
-To set up your `.env` file see `exmple.env`.  
+To set up your `.env` file see `example.env`.  
 First run `update_team_players.py` to collect team and player info. You can see example files in the `data` folder.  
 Then run celery using the command `celery -A tasks worker -B -l info`, and run `football_tg_bot.py`.
