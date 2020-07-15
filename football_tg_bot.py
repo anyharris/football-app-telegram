@@ -76,9 +76,10 @@ def player_stats(update, context):
         msg_text = rp.player_stats(response)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     elif 1 < len(player_list) <= 4:
-        keyboard = []
-        for i in player_list:
-            keyboard.append([InlineKeyboardButton(i['player_name'], callback_data=f'p{i["player_id"]}')])
+
+        keyboard = [InlineKeyboardButton(
+            player["player_name"], callback_data=f'p{player["player_id"]}')
+            for player in player_list]
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text('Please choose:', reply_markup=reply_markup)
     else:
