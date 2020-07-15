@@ -71,20 +71,19 @@ def player_stats(update, context):
     if len(player_list) == 0:
         msg_text = 'No search results\\.'
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
-    elif len(player_list) > 4:
+    elif len(player_list) == 1:
+        response = apif.get_player_id(player_list[0]['player_id']).json()
+        msg_text = rp.player_stats(response)
+        bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
+    elif 1 < len(player_list) <= 4:
+        keyboard = []
+        for i in player_list:
+            keyboard.append([InlineKeyboardButton(i['player_name'], callback_data=f'p{i["player_id"]}')])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text('Please choose:', reply_markup=reply_markup)
+    else:
         msg_text = 'Too many search results\\, please be more specific\\.'
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
-    else:
-        if len(player_list) == 1:
-            response = apif.get_player_id(player_list[0]['player_id']).json()
-            msg_text = rp.player_stats(response)
-            bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
-        else:
-            keyboard = []
-            for i in player_list:
-                keyboard.append([InlineKeyboardButton(i['player_name'], callback_data=f'p{i["player_id"]}')])
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
 
 def fixtures_today(update, context):
