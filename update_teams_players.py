@@ -19,9 +19,9 @@ apif = APIFootball(api_key=os.getenv('API_KEY_APIFOOTBALL'), season=SEASON)
 # Get the league ID for the current prem season
 response = apif.get_league_search('premier_league').json()
 league_id = None
-for i in response['api']['leagues']:
-    if i['country_code'] == 'GB' and i['season'] == SEASON:
-        league_id = i['league_id']
+for league in response['api']['leagues']:
+    if league['country_code'] == 'GB' and league['season'] == SEASON:
+        league_id = league['league_id']
 if not league_id:
     print('Can\'t find the league ID')
     sys.exit()
@@ -30,25 +30,25 @@ if not league_id:
 response = apif.get_teams(league_id).json()
 apif_teams = []
 apif_names = []
-for i in response['api']['teams']:
-    apif_teams.append(i['team_id'])
-    apif_names.append(i['name'])
+for team in response['api']['teams']:
+    apif_teams.append(team['team_id'])
+    apif_names.append(team['name'])
 apif_names = (sorted(apif_names))
 
 # Iterate through team IDs to get a list of all prem player IDs
 apif_player_ids = []
-for i in apif_teams:
-    response = apif.get_squad(i).json()
+for team_id in apif_teams:
+    response = apif.get_squad(team_id).json()
     players = response['api']['players']
-    for j in players:
-        apif_player_ids.append(j["player_id"])
+    for player in players:
+        apif_player_ids.append(player["player_id"])
 
 # Get prem team names from TheOdds
 response = todds.get_odds_theodds().json()
 todds_teams = []
-for i in response['data']:
-    todds_teams.append(i['teams'][0])
-    todds_teams.append(i['teams'][1])
+for fixture in response['data']:
+    todds_teams.append(fixture['teams'][0])
+    todds_teams.append(fixture['teams'][1])
 todds_teams = list(set(todds_teams))
 todds_teams = (sorted(todds_teams))
 
