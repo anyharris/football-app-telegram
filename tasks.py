@@ -17,10 +17,31 @@ from datetime import date
 from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 from celery.schedules import crontab
-from modules.api_wrappers import APIFootball, TheOdds
-from modules.response_parser import ResponseParser
+from modules.postgres_methods import FootballPostgres
+from modules.api_wrappers import APIFootball, TheOdds, Telegram
+import modules.response_parser as rp
 
 
+# Load environment variables
+load_dotenv()
+SEASON = int(os.getenv('SEASON'))
+TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
+API_KEY_APIFOOTBALL = os.getenv('API_KEY_APIFOOTBALL')
+API_KEY_THEODDS = os.getenv('API_KEY_THEODDS')
+POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASS = os.getenv('POSTGRES_PASS')
+
+# Initialize objects with env variables
+tg = Telegram(bot_token=TG_BOT_TOKEN)
+apif = APIFootball(api_key=API_KEY_APIFOOTBALL, season=SEASON)
+todds = TheOdds(api_key=API_KEY_THEODDS)
+fpsg = FootballPostgres(database=POSTGRES_DATABASE, host=POSTGRES_HOST, user=POSTGRES_USER, password=POSTGRES_PASS)
+
+app = Celery('tasks', backend='redis://localhost:6379/0', broker='pyamqp://guest@localhost//')
+
+# Load league data and list of bot subscribers
 with open('data/league_data.txt') as json_file:
     league_data = json.load(json_file)
 TEAMS_APIFOOTBALL = league_data['APIFootball_team_names']
@@ -30,15 +51,11 @@ with open('data/chat_ids.txt') as json_file:
     chat_dict = json.load(json_file)
 CHAT_IDS = chat_dict['chat_ids']
 
-
-app = Celery('tasks', backend='redis://localhost:6379/0', broker='pyamqp://guest@localhost//')
-
-load_dotenv()
-apif = APIFootball(api_key=os.getenv('API_KEY_APIFOOTBALL'), season=int(os.getenv('SEASON')))
-todds = TheOdds(api_key=os.getenv('API_KEY_THEODDS'))
-
+# Default celery task logger
 logger = get_task_logger(__name__)
 
+
+# Schedule when to look for the day's fixtures (UTC time)
 app.conf.beat_schedule = {
     'check-daily-matches': {
         'task': 'tasks.fixtures',
@@ -70,6 +87,7 @@ def odds(prev_result, fixture):
     home_team_position = TEAMS_APIFOOTBALL.index(home_team_apifootball)
     home_team_theodds = TEAMS_THEODDS[home_team_position]
     response = todds.get_odds_theodds().json()
+    fixture_odds = None
     for i in response['data']:
         if i['commence_time'] == event_timestamp and i['home_team'] == home_team_theodds:
             for j in i['sites']:
@@ -113,12 +131,14 @@ def news(fixture):
 @app.task(name='tasks.messenger')
 def messenger(data, fixture_id):
     print(f'starting to parse messages for fixture id: {fixture_id}')
-    rparser = ResponseParser()
-    for i in CHAT_IDS:
-        rparser.parse_notification(data, fixture_id, i)
-        print(f'parsed notification messages for fixture id: {fixture_id} and chat id {i}')
-    rparser.parse_news(data, fixture_id)
-    print(f'parsed news message for fixture id: {fixture_id}')
+    notification_msg = rp.notification(data)
+    identifier = f'f{fixture_id}'
+    for chat_id in CHAT_IDS:
+        tg.callback_button_message(chat_id, identifier, notification_msg)
+        print(f'parsed and sent notification messages for fixture id: {fixture_id} and chat id {chat_id}')
+    news_message = rp.news(data, fixture_id)
+    fpsg.write_news(fixture_id, news_message)
+    print(f'parsed and stored news message for fixture id: {fixture_id}')
 
 
 @app.task(name='tasks.execute')

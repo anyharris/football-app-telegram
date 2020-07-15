@@ -1,17 +1,11 @@
 # postgres_methods.py
 import psycopg2
 import datetime
-from dotenv import load_dotenv
-import os
 
 
-class FootballPostgresql():
-    DATABASE = 'football_bot'
-
-    def __init__(self):
-        load_dotenv()
-        self.con = psycopg2.connect(database=self.DATABASE, host=os.getenv('POSTGRES_HOST'),
-                                    user=os.getenv('POSTGRES_USER'), password=os.getenv('POSTGRES_PASS'))
+class FootballPostgres:
+    def __init__(self, database, host, user, password):
+        self.con = psycopg2.connect(database=database, host=host, user=user, password=password)
         cur = self.con.cursor()
         cur.execute(
             'CREATE TABLE IF NOT EXISTS testing (id serial PRIMARY KEY, time_stamp text, message_id text, message_text text)')
