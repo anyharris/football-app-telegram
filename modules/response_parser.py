@@ -50,8 +50,6 @@ def news(celery_response, fixture):
         text += '\n\n'
     text = text.replace('-', '\\-')
     text = text.replace('.', '\\.')
-    # Store the news message in a database in case it is asked for
-    #    Uses the fixture number as a unique identifier in the db
     return text
 
 

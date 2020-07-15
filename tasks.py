@@ -70,11 +70,11 @@ def fixtures():
     date_today = str(date.today())
     response = apif.get_fixtures_leaguedate(LEAGUE_ID, date_today).json()
     fixtures_response = response['api']['fixtures']
-    for i in fixtures_response:
+    for each in fixtures_response:
         fixture = {
-            'fixture_id': i['fixture_id'],
-            'event_timestamp': i['event_timestamp'],
-            'home_team': i['homeTeam']['team_name']
+            'fixture_id': each['fixture_id'],
+            'event_timestamp': each['event_timestamp'],
+            'home_team': each['homeTeam']['team_name']
         }
         print(f'ordering execution of fixture {fixture}')
         execute(fixture)
@@ -88,22 +88,22 @@ def odds(prev_result, fixture):
     home_team_theodds = TEAMS_THEODDS[home_team_position]
     response = todds.get_odds_theodds().json()
     fixture_odds = None
-    for i in response['data']:
-        if i['commence_time'] == event_timestamp and i['home_team'] == home_team_theodds:
-            for j in i['sites']:
-                if j['site_key'] == 'betfair':
-                    if i['home_team'] == i['teams'][0]:
+    for fixture in response['data']:
+        if fixture['commence_time'] == event_timestamp and fixture['home_team'] == home_team_theodds:
+            for bookmaker in fixture['sites']:
+                if bookmaker['site_key'] == 'betfair':
+                    if fixture['home_team'] == fixture['teams'][0]:
                         fixture_odds = {
-                            'Home': round(j['odds']['h2h'][0], 2),
-                            'Away': round(j['odds']['h2h'][1], 2),
-                            'Draw': round(j['odds']['h2h'][2], 2),
+                            'Home': round(bookmaker['odds']['h2h'][0], 2),
+                            'Away': round(bookmaker['odds']['h2h'][1], 2),
+                            'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
                     else:
                         fixture_odds = {
-                            'Home': round(j['odds']['h2h'][1], 2),
-                            'Away': round(j['odds']['h2h'][0], 2),
-                            'Draw': round(j['odds']['h2h'][2], 2),
+                            'Home': round(bookmaker['odds']['h2h'][1], 2),
+                            'Away': round(bookmaker['odds']['h2h'][0], 2),
+                            'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
     if prev_result:
