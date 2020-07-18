@@ -23,33 +23,30 @@ for league in response['api']['leagues']:
     if league['country_code'] == 'GB' and league['season'] == SEASON:
         league_id = league['league_id']
 if not league_id:
-    print('Can\'t find the league ID')
+    print("Can't find the league ID")
     sys.exit()
 
 # Get prem team names and ids from APIFootball
 response = apif.get_teams(league_id).json()
-apif_teams = []
-apif_names = []
-for team in response['api']['teams']:
-    apif_teams.append(team['team_id'])
-    apif_names.append(team['name'])
-apif_names = (sorted(apif_names))
+apif_teams = [team['team_id'] for team in response['api']['teams']]
+apif_names = sorted([team['name'] for team in response['api']['teams']])
 
 # Iterate through team IDs to get a list of all prem player IDs
 apif_player_ids = []
 for team_id in apif_teams:
     response = apif.get_squad(team_id).json()
-    players = response['api']['players']
-    for player in players:
-        apif_player_ids.append(player["player_id"])
+    squad_player_ids = [player['player_id'] for player in response['api']['players']]
+    apif_player_ids += squad_player_ids
+"""
+I figured out how to do the above in 1 line with a list comprehension but it is really tough to read:
+apif_player_ids = [player["player_id"] for team_id in apif_teams for player in apif.get_squad(team_id).json()['api']['players']]
+"""
 
 # Get prem team names from TheOdds
 response = todds.get_odds_theodds().json()
-todds_teams = []
-for fixture in response['data']:
-    todds_teams.append(fixture['teams'][0])
-    todds_teams.append(fixture['teams'][1])
-todds_teams = list(set(todds_teams))
+todds_teams = [fixture['teams'][0] for fixture in response['data']]\
+              + [fixture['teams'][1] for fixture in response['data']]
+todds_teams = list(set(todds_teams))    # remove duplicates
 todds_teams = (sorted(todds_teams))
 
 # Store all of this as a json file
