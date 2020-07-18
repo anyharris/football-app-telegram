@@ -59,6 +59,6 @@ json_storage = {
     'APIFootball_player_IDs': apif_player_ids,
     'TheOdds_team_names': todds_teams
 }
-with open('league_data.txt', 'w') as outfile:
+with open('data/league_data.txt', 'w') as outfile:
     json.dump(json_storage, outfile)
 
