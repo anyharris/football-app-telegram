@@ -12,9 +12,12 @@ import os
 import sys
 
 load_dotenv()
+API_KEY_APIFOOTBALL = os.getenv('API_KEY_APIFOOTBALL')
+API_KEY_THEODDS = os.getenv('API_KEY_THEODDS')
 SEASON = int(os.getenv('SEASON'))    # storing in .env so it's easy to modify without making the local repo out of sync
-todds = TheOdds(api_key=os.getenv('API_KEY_THEODDS'))
-apif = APIFootball(api_key=os.getenv('API_KEY_APIFOOTBALL'), season=SEASON)
+
+todds = TheOdds(api_key=API_KEY_THEODDS)
+apif = APIFootball(api_key=API_KEY_APIFOOTBALL, season=SEASON)
 
 # Get the league ID for the current prem season
 response = apif.get_league_search('premier_league').json()
