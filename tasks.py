@@ -134,7 +134,7 @@ def messenger(data, fixture_id):
     notification_msg = rp.notification(data)
     identifier = f'f{fixture_id}'
     for chat_id in CHAT_IDS:
-        tg.callback_button_message(chat_id, identifier, notification_msg)
+        tg.callback_button_message(chat_id, notification_msg, identifier)
         print(f'parsed and sent notification messages for fixture id: {fixture_id} and chat id {chat_id}')
     news_message = rp.news(data, fixture_id)
     fpsg.write_news(fixture_id, news_message)
