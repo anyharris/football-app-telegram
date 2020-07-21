@@ -66,7 +66,7 @@ app.conf.beat_schedule = {
 
 @app.task(name='tasks.fixtures')
 def fixtures():
-    print(f'starting to get fixtures and execute them')
+    print('starting to get fixtures and execute them')
     date_today = str(date.today())
     response = apif.get_fixtures_leaguedate(LEAGUE_ID, date_today).json()
     fixtures_response = response['api']['fixtures']
@@ -106,6 +106,8 @@ def odds(prev_result, fixture):
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
+        else:
+            print(f"didn't get odds for fixture {fixture}")
     if prev_result:
         return prev_result, fixture_odds
     else:
