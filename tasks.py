@@ -107,7 +107,7 @@ def odds(prev_result, fixture):
                         }
                         print(f'got odds {fixture_odds} for fixture {fixture}')
         else:
-            print(f"didn't get odds for fixture {fixture}")
+            print(f"didn't get odds for fixture {fixture['teams']}")
     if prev_result:
         return prev_result, fixture_odds
     else:
