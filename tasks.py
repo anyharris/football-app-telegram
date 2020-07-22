@@ -98,14 +98,14 @@ def odds(prev_result, fixture):
                             'Away': round(bookmaker['odds']['h2h'][1], 2),
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
-                        print(f'got odds {fixture_odds} for fixture {fixture}')
+                        print(f"got odds {fixture_odds} for fixture {fixture['teams']}")
                     else:
                         fixture_odds = {
                             'Home': round(bookmaker['odds']['h2h'][1], 2),
                             'Away': round(bookmaker['odds']['h2h'][0], 2),
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
-                        print(f'got odds {fixture_odds} for fixture {fixture}')
+                        print(f"got odds {fixture_odds} for fixture {fixture['teams']}")
         else:
             print(f"didn't get odds for fixture {fixture['teams']}")
     if prev_result:
