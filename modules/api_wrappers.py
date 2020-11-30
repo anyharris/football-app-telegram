@@ -64,8 +64,8 @@ class APIFootball:
         response = _get(uri, headers=headers)
         return response
 
-    def get_league_search(self, search_term):
-        path = f'/v2/leagues/search/{search_term}'
+    def get_league_current(self):
+        path = f'/v2/leagues/seasonsAvailable/2'
         uri = self.API_HOST + path
         headers = self._headers()
         response = _get(uri, headers=headers)
