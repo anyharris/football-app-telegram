@@ -14,7 +14,7 @@ import json
 import os
 from dotenv import load_dotenv
 from datetime import date
-from celery import Celery, chain
+from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 from celery.schedules import crontab
 from modules.postgres_methods import FootballPostgres
@@ -81,7 +81,7 @@ def fixtures():
 
 
 @app.task(name='tasks.odds')
-def odds(fixture_news, fixture):
+def odds(prev_result, fixture):
     event_timestamp = fixture['event_timestamp']
     home_team_apifootball = fixture['home_team']
     home_team_position = TEAMS_APIFOOTBALL.index(home_team_apifootball)
@@ -108,7 +108,10 @@ def odds(fixture_news, fixture):
                         print(f"got odds {fixture_odds} for fixture {fixture['teams']}")
         else:
             print(f"didn't get odds for fixture {fixture['teams']}")
-    return fixture_news, fixture_odds
+    if prev_result:
+        return prev_result, fixture_odds
+    else:
+        return fixture_odds
 
 
 @app.task(name='tasks.news')
@@ -117,6 +120,7 @@ def news(fixture):
     fixture_id = fixture['fixture_id']
     while True:
         response = apif.get_news(fixture_id).json()
+        print(response)
         if response['api']['results'] != 0:
             if response['api']['lineUps'][next(iter(response['api']['lineUps']))]['formation'] is not None:
                 fixture_news = response['api']['lineUps']
@@ -127,14 +131,14 @@ def news(fixture):
 
 
 @app.task(name='tasks.messenger')
-def messenger(fixture_news_odds, fixture_id):
+def messenger(data, fixture_id):
     print(f'starting to parse messages for fixture id: {fixture_id}')
-    notification_msg = rp.notification(fixture_news_odds)
+    notification_msg = rp.notification(data)
     identifier = f'f{fixture_id}'
     for chat_id in CHAT_IDS:
         tg.callback_button_message(chat_id, notification_msg, identifier)
         print(f'parsed and sent notification messages for fixture id: {fixture_id} and chat id {chat_id}')
-    news_message = rp.news(fixture_news_odds)
+    news_message = rp.news(data, fixture_id)
     fpsg.write_news(fixture_id, news_message)
     print(f'parsed and stored news message for fixture id: {fixture_id}')
 
@@ -145,8 +149,9 @@ def execute(fixture):
     fixture_id = fixture['fixture_id']
     event_timestamp = fixture['event_timestamp']
     now = int(time.time())
-    chain(
+    job = chain(
         news.s(fixture).set(countdown=(event_timestamp - now - (60 * 58))),
-        odds.s(fixture), messenger.s(fixture_id)
-    )()
+        odds.s(fixture).set(countdown=(60 * 1))
+    )
+    chord([odds.s(prev_result=False, fixture=fixture).set(countdown=(event_timestamp - now - (60 * 70))), job])(messenger.s(fixture_id))
     print(f'executed fixture {fixture}')

@@ -20,10 +20,10 @@ todds = TheOdds(api_key=API_KEY_THEODDS)
 apif = APIFootball(api_key=API_KEY_APIFOOTBALL, season=SEASON)
 
 # Get the league ID for the current prem season
-response = apif.get_league_current().json()
+response = apif.get_league_search('premier_league').json()
 league_id = None
 for league in response['api']['leagues']:
-    if league['season'] == SEASON:
+    if league['country_code'] == 'GB' and league['season'] == SEASON:
         league_id = league['league_id']
 if not league_id:
     print("Can't find the league ID")
@@ -46,9 +46,6 @@ apif_player_ids = [player["player_id"] for team_id in apif_teams for player in a
 """
 
 # Get prem team names from TheOdds
-"""
-this doesn't work really because sometimes one team doesn't have an active bet
-"""
 response = todds.get_odds_theodds().json()
 todds_teams = [fixture['teams'][0] for fixture in response['data']]\
               + [fixture['teams'][1] for fixture in response['data']]
