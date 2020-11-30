@@ -8,7 +8,7 @@ class FootballPostgres:
         self.con = psycopg2.connect(database=database, host=host, user=user, password=password)
         cur = self.con.cursor()
         cur.execute(
-            'CREATE TABLE IF NOT EXISTS testing (id serial PRIMARY KEY, time_stamp text, message_id text, message_text text)')
+            'CREATE TABLE IF NOT EXISTS news_messages (id serial PRIMARY KEY, time_stamp text, message_id text, message_text text)')
         self.con.commit()
 
     def write_news(self, message_id, news_message):
