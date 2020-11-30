@@ -46,9 +46,11 @@ def callback_query_handler(update, context):
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
         logging.info(f'sent request for cqd {cqd}')
     elif cqd[0] == 'p':
-        logging.info(f'player callback for cqd {cqd}')
+        logging.info(f'player callback for cqd/league {cqd}')
         response = apif.get_player_id(cqd[1:]).json()
+        print(response)
         msg_text = rp.player_stats(response)
+        print(msg_text)
         bot.send_message(chat_id=chat_id, text=msg_text, parse_mode='MarkdownV2')
     else:
         logging.warning("Button click didn't callback anything")
