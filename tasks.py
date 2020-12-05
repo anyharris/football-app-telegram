@@ -82,32 +82,38 @@ def fixtures():
 
 @app.task(name='tasks.odds')
 def odds(fixture_news, fixture):
+    print(fixture_news)
+    if fixture_news == 'task.news: timeout - no news':
+        fixture_odds = {}
+        print(f"task.odds: no news, so didn't get odds for fixture {fixture['fixture_id']}")
+        return fixture_news, fixture_odds
     event_timestamp = fixture['event_timestamp']
     home_team_apifootball = fixture['home_team']
     home_team_position = TEAMS_APIFOOTBALL.index(home_team_apifootball)
     home_team_theodds = TEAMS_THEODDS[home_team_position]
     response = todds.get_odds_theodds().json()
     fixture_odds = None
-    for fixture in response['data']:
-        if fixture['commence_time'] == event_timestamp and fixture['home_team'] == home_team_theodds:
-            for bookmaker in fixture['sites']:
+    for response_fixture in response['data']:
+        if response_fixture['commence_time'] == event_timestamp and response_fixture['home_team'] == home_team_theodds:
+            for bookmaker in response_fixture['sites']:
                 if bookmaker['site_key'] == 'betfair':
-                    if fixture['home_team'] == fixture['teams'][0]:
+                    if response_fixture['home_team'] == response_fixture['teams'][0]:
                         fixture_odds = {
                             'Home': round(bookmaker['odds']['h2h'][0], 2),
                             'Away': round(bookmaker['odds']['h2h'][1], 2),
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
-                        print(f"got odds {fixture_odds} for fixture {fixture['teams']}")
+                        print(f"got odds {fixture_odds} for fixture {response_fixture['teams']}")
                     else:
                         fixture_odds = {
                             'Home': round(bookmaker['odds']['h2h'][1], 2),
                             'Away': round(bookmaker['odds']['h2h'][0], 2),
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
-                        print(f"got odds {fixture_odds} for fixture {fixture['teams']}")
+                        print(f"got odds {fixture_odds} for fixture {response_fixture['teams']}")
         else:
-            print(f"didn't get odds for fixture {fixture['teams']}")
+            fixture_odds = {}
+            print(f"task.odds: news, but didn't get odds for fixture {response_fixture['teams']}")
     return fixture_news, fixture_odds
 
 
@@ -116,32 +122,39 @@ def news(fixture):
     print(f'starting to get news for fixture {fixture}')
     fixture_id = fixture['fixture_id']
     while True:
+        event_timestamp = fixture['event_timestamp']
+        now = int(time.time())
+        if event_timestamp - now <= 35:
+            return 'task.news: timeout - no news'
         response = apif.get_news(fixture_id).json()
         if response['api']['results'] != 0:
             if response['api']['lineUps'][next(iter(response['api']['lineUps']))]['formation'] is not None:
                 fixture_news = response['api']['lineUps']
-                print(f'got the news for fixture {fixture}')
+                print(f'task.news: got the news for fixture {fixture}')
                 return fixture_news
-        print('waiting 1 min for new news')
+        print('task.news: waiting 1 min for new news')
         time.sleep(60 * 1)
 
 
 @app.task(name='tasks.messenger')
 def messenger(fixture_news_odds, fixture_id):
-    print(f'starting to parse messages for fixture id: {fixture_id}')
-    notification_msg = rp.notification(fixture_news_odds)
-    identifier = f'f{fixture_id}'
-    for chat_id in CHAT_IDS:
-        tg.callback_button_message(chat_id, notification_msg, identifier)
-        print(f'parsed and sent notification messages for fixture id: {fixture_id} and chat id {chat_id}')
-    news_message = rp.news(fixture_news_odds)
-    fpsg.write_news(fixture_id, news_message)
-    print(f'parsed and stored news message for fixture id: {fixture_id}')
+    if fixture_news_odds[0] == 'task.news: timeout - no news':
+        print(f'task.messenger: no news for fixture id: {fixture_id}')
+    else:
+        print(f'task.messenger: starting to parse messages for fixture id: {fixture_id}')
+        notification_msg = rp.notification(fixture_news_odds)
+        identifier = f'f{fixture_id}'
+        for chat_id in CHAT_IDS:
+            tg.callback_button_message(chat_id, notification_msg, identifier)
+            print(f'task.messenger: parsed and sent notification messages for fixture id: {fixture_id} and chat id {chat_id}')
+        news_message = rp.news(fixture_news_odds)
+        fpsg.write_news(fixture_id, news_message)
+        print(f'task.messenger: parsed and stored news message for fixture id: {fixture_id}')
 
 
 @app.task(name='tasks.execute')
 def execute(fixture):
-    print(f'starting execution of fixture {fixture}')
+    print(f'task.execute: starting execution of fixture {fixture}')
     fixture_id = fixture['fixture_id']
     event_timestamp = fixture['event_timestamp']
     now = int(time.time())
@@ -149,4 +162,4 @@ def execute(fixture):
         news.s(fixture).set(countdown=(event_timestamp - now - (60 * 58))),
         odds.s(fixture), messenger.s(fixture_id)
     )()
-    print(f'executed fixture {fixture}')
+    print(f'task.execute: executed fixture {fixture}')
