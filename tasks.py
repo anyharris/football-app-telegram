@@ -111,6 +111,8 @@ def odds(fixture_news, fixture):
                             'Draw': round(bookmaker['odds']['h2h'][2], 2),
                         }
                         print(f"got odds {fixture_odds} for fixture {response_fixture['teams']}")
+                    break
+            break
         else:
             fixture_odds = {}
             print(f"task.odds: news, but didn't get odds for fixture {response_fixture['teams']}")
