@@ -6,8 +6,6 @@ cffi==1.14.0
 chardet==3.0.4
 cryptography==3.2
 decorator==4.4.2
-enum34==1.1.6
-future==0.18.2
 idna==2.9
 kombu==4.6.10
 psycopg2-binary==2.8.5
